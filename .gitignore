@@ -1,0 +1,7 @@
+*__pycache__*
+production.py
+/venv/
+.vscode/
+build/
+dist/
+*.egg*
