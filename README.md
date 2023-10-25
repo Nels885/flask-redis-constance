@@ -10,7 +10,7 @@ https://django-constance.readthedocs.io/en/latest/
 1. Install:
 
 ```
-pip install flask-constance
+pip install flask-redis-constance
 ```
 
 2. Example of use:

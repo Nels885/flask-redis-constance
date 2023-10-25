@@ -11,6 +11,20 @@ FIELDS = {
 }
 
 
+def redis_mset(*args, **kwargs):
+    if args and isinstance(args[0], dict):
+        REDIS.mset(args[0])
+    if kwargs:
+        REDIS.mset(kwargs)
+
+
+def redis_get(key, default=''):
+    value = REDIS.get(key)
+    if not value:
+        return default
+    return value
+
+
 class ConstanceForm(Form):
 
     def __init__(self, initial, *args, **kwargs):
