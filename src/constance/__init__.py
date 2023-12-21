@@ -92,7 +92,7 @@ class Config:
         return {key: (self.config.get(key)[0], REDIS.get(key), self.config.get(key)[1]) for key in fields}
 
     def get_default(self, key: str) -> str:
-        value = self.__dict__.get(key, '')
+        value = self.config.get(key, '')
         if isinstance(value, tuple) and len(value) == 2:
             return value[0]
         return ""
@@ -102,7 +102,7 @@ class Config:
             setattr(self, key, value)
 
     def reset(self, key: str):
-        value = settings.CONFIG.get(key, '')
+        value = self.config.get(key, '')
         if value:
             REDIS.set(key, value[0])
             setattr(self, key, REDIS.get(key))
