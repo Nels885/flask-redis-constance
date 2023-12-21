@@ -44,16 +44,14 @@ class ConstanceForm(Form):
 class Config:
 
     def __init__(self, *args, **kwargs):
-        for key, value in settings.CONFIG.items():
-            if isinstance(key, str) and isinstance(value, tuple) and len(value) == 2:
-                key = key.upper()
-                if key not in REDIS.keys():
-                    REDIS.set(key, value[0])
-                setattr(self, key, REDIS.get(key))
+        self.config = settings.CONFIG
+        self.fieldsets = settings.CONFIG_FIELDSETS
+        self._addattribute()
 
     def __setattr__(self, __name: str, __value) -> None:
         # print(f'Setting {__name} to {__value}')
-        REDIS.set(__name, __value)
+        if isinstance(__value, str):
+            REDIS.set(__name, __value)
         self.__dict__[__name] = __value
 
     def __getattribute__(self, __name: str) -> str:
@@ -61,7 +59,7 @@ class Config:
         Retrieving attribute value
         """
         try:
-            if isinstance(__name, str) and __name.upper() in list(settings.CONFIG):
+            if isinstance(__name, str) and __name.upper() in REDIS.keys():
                 value = REDIS.get(__name.upper())
                 if value.isnumeric():
                     return int(value)
@@ -70,19 +68,34 @@ class Config:
         except AttributeError:
             raise KeyError(f" value {__name} does not exist in constance")
 
+    def _addattribute(self) -> None:
+        if self.config and isinstance(self.config, dict):
+            print(self.config)
+            for key, value in self.config.items():
+                if isinstance(key, str) and isinstance(value, tuple) and len(value) == 2:
+                    key = key.upper()
+                    if key not in REDIS.keys():
+                        REDIS.set(key, value[0])
+                    setattr(self, key, REDIS.get(key))
+
+    def init_app(self, app):
+        self.config = app.config.get('CONSTANCE_CONFIG', {})
+        self.fieldsets = app.config.get('CONSTANCE_CONFIG_FIELDSETS', {})
+        print(self.fieldsets)
+        self._addattribute()
+
     def set(self, key, value):
         self.__setattr__(key, value)
         return value
 
-    @staticmethod
-    def get_fields(name="all") -> dict:
+    def get_fields(self, name="all") -> dict:
         if name == "all":
-            fields = list(settings.CONFIG)
-        fields = settings.CONFIG_FIELDSETS.get(name, '')
-        return {key: (settings.CONFIG.get(key)[0], REDIS.get(key), settings.CONFIG.get(key)[1]) for key in fields}
+            fields = list(self.config)
+        fields = self.fieldsets.get(name, '')
+        return {key: (self.config.get(key)[0], REDIS.get(key), self.config.get(key)[1]) for key in fields}
 
     def get_default(self, key: str) -> str:
-        value = settings.CONFIG.get(key, '')
+        value = self.__dict__.get(key, '')
         if isinstance(value, tuple) and len(value) == 2:
             return value[0]
         return ""

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "flask-redis-constance"
-version = "0.0.2"
+version = "0.0.3"
 description = "For use Dynamic settings with Flask"
 readme = "README.md"
 authors = [{ name = "Lionel VOIRIN", email = "nels885@protonmail.com" }]
