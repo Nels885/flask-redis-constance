@@ -49,7 +49,6 @@ class Config:
         self._addattribute()
 
     def __setattr__(self, __name: str, __value) -> None:
-        # print(f'Setting {__name} to {__value}')
         if isinstance(__value, str):
             REDIS.set(__name, __value)
         self.__dict__[__name] = __value
@@ -70,7 +69,6 @@ class Config:
 
     def _addattribute(self) -> None:
         if self.config and isinstance(self.config, dict):
-            print(self.config)
             for key, value in self.config.items():
                 if isinstance(key, str) and isinstance(value, tuple) and len(value) == 2:
                     key = key.upper()
@@ -81,7 +79,6 @@ class Config:
     def init_app(self, app):
         self.config = app.config.get('CONSTANCE_CONFIG', {})
         self.fieldsets = app.config.get('CONSTANCE_CONFIG_FIELDSETS', {})
-        print(self.fieldsets)
         self._addattribute()
 
     def set(self, key, value):
