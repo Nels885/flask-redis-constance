@@ -6,3 +6,4 @@ production.py
 build/
 dist/
 *.egg*
+src/settings/
