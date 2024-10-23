@@ -11,4 +11,4 @@ except Exception as error:
 CONFIG = getattr(user_settings, 'CONSTANCE_CONFIG', {})
 CONFIG_FIELDSETS = getattr(user_settings, 'CONSTANCE_CONFIG_FIELDSETS', {})
 
-REDIS = getattr(user_settings, 'REDIS', Redis(encoding="utf-8", decode_responses=True))
+REDIS = getattr(user_settings, 'REDIS', Redis(encoding="utf-8", decode_responses=True, health_check_interval=30))

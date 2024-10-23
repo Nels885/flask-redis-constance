@@ -65,6 +65,7 @@ class Config:
     def init_app(self, app):
         self.config = app.config.get('CONSTANCE_CONFIG', {})
         self.fieldsets = app.config.get('CONSTANCE_CONFIG_FIELDSETS', {})
+        REDIS = app.config.get('REDIS', REDIS)
         self._addattribute()
 
     def set(self, key, value):
