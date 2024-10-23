@@ -1,0 +1,6 @@
+redis
+WTForms>=3.0.1
+pytest
+flake8
+build
+twine

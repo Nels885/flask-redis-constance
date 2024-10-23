@@ -1,0 +1,24 @@
+version: 2.1
+orbs:
+  python: circleci/python@2.0.3
+jobs: # A basic unit of work in a run
+  build: # runs not using Workflows must have a `build` job as entry point
+    # directory where steps are run
+    working_directory: ~/circleci-flask-redis-constance
+    docker: # run the steps with Docker
+      # CircleCI Python images available at: https://hub.docker.com/r/circleci/python/
+      - image: cimg/python:3.8.13
+      - image: cimg/redis:5.0.14
+    steps: # steps that comprise the `build` job
+      - checkout # check out source code to working directory
+      - python/install-packages:
+          args: "-r requirements_dev.txt"
+          pkg-manager: pip
+      - run:
+          name: Run flake8
+          command: |
+            python -m flake8
+      - run:
+          name: Run tests
+          command: |
+            python -m pytest -v
