@@ -10,6 +10,33 @@ FIELDS = {
 }
 
 
+def redis_set(key, value):
+    if isinstance(value, (str, int, bytes, float)):
+        REDIS.set(key, value)
+        return True
+    return False
+
+
+def redis_mset(*args, **kwargs):
+    try:
+        if args and isinstance(args[0], dict):
+            REDIS.mset(args[0])
+        if kwargs:
+            REDIS.mset(kwargs)
+        return True
+    except Exception:
+        return False
+
+
+def redis_get(key, default=''):
+    value = REDIS.get(key)
+    if value:
+        if isinstance(value, str) and value.isdecimal():
+            return int(value)
+        return value
+    return default
+
+
 class ConstanceForm(Form):
 
     def __init__(self, initial, *args, **kwargs):
@@ -34,8 +61,9 @@ class Config:
         self._addattribute()
 
     def __setattr__(self, __name: str, __value) -> None:
-        if isinstance(__value, str):
-            REDIS.set(__name, __value)
+        # if isinstance(__value, (str, int)):
+        #     REDIS.set(__name, __value)
+        redis_set(__name, __value)
         self.__dict__[__name] = __value
 
     def __getattribute__(self, __name: str) -> str:
@@ -44,7 +72,7 @@ class Config:
         """
         try:
             if isinstance(__name, str) and __name.upper() in REDIS.keys():
-                return self._redis_get(__name.upper())
+                return redis_get(__name.upper())
             return super().__getattribute__(__name)
         except AttributeError:
             raise KeyError(f" value {__name} does not exist in constance")
@@ -55,8 +83,8 @@ class Config:
                 if isinstance(key, str) and isinstance(value, tuple) and len(value) == 2:
                     key = key.upper()
                     if key not in REDIS.keys():
-                        REDIS.set(key, value[0])
-                    setattr(self, key, self._redis_get(key))
+                        redis_set(key, value[0])
+                    setattr(self, key, redis_get(key))
 
     def init_app(self, app):
         self.config = app.config.get('CONSTANCE_CONFIG', {})
@@ -71,7 +99,7 @@ class Config:
         if name == "all":
             fields = list(self.config)
         fields = self.fieldsets.get(name, '')
-        return {key: (self.config.get(key)[0], self._redis_get(key), self.config.get(key)[1]) for key in fields}
+        return {key: (self.config.get(key)[0], redis_get(key), self.config.get(key)[1]) for key in fields}
 
     def get_default(self, key: str) -> str:
         value = self.config.get(key, '')
@@ -86,31 +114,14 @@ class Config:
     def reset(self, key: str):
         value = self.config.get(key, '')
         if value:
-            REDIS.set(key, value[0])
-            setattr(self, key, REDIS.get(key))
+            redis_set(key, value[0])
+            setattr(self, key, redis_get(key))
             return self.__dict__[key]
         return None
 
-    @staticmethod
-    def _redis_get(key):
-        value = REDIS.get(key)
-        if isinstance(value, str) and value.isdecimal():
-            return int(value)
-        return value
+    def reset_all(self):
+        for key, value in self.config.items():
+            self.__setattr__(key, value[0])
 
 
 config = Config()
-
-
-def redis_mset(*args, **kwargs):
-    if args and isinstance(args[0], dict):
-        REDIS.mset(args[0])
-    if kwargs:
-        REDIS.mset(kwargs)
-
-
-def redis_get(key, default=''):
-    value = REDIS.get(key)
-    if not value:
-        return default
-    return value
