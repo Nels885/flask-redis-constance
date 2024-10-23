@@ -2,7 +2,6 @@
 production.py
 /venv/
 .vscode/
-.flake8
 build/
 dist/
 *.egg*
