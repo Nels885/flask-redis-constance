@@ -3,7 +3,6 @@ from wtforms import Form, IntegerField, BooleanField, StringField
 from constance import settings
 from constance.settings import REDIS
 
-
 FIELDS = {
     str: (StringField, {}),
     bool: (BooleanField, {'required': False}),
@@ -65,7 +64,6 @@ class Config:
     def init_app(self, app):
         self.config = app.config.get('CONSTANCE_CONFIG', {})
         self.fieldsets = app.config.get('CONSTANCE_CONFIG_FIELDSETS', {})
-        REDIS = app.config.get('REDIS', REDIS)
         self._addattribute()
 
     def set(self, key, value):
